@@ -3,170 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hộp tình iuu Vinh & Hoaa</title>
+    <title>Hộp Tình Iuu Vinh & Hoaa</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        :root { --wife-color: #ff4d6d; --hus-color: #00b4d8; }
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Arial', sans-serif; background: #f0f2f5; }
-        
-        /* Màn hình đăng nhập */
-        #login-screen { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; }
-        .login-half { flex: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 2rem; font-weight: bold; transition: 0.3s; }
-        .login-wife { background: var(--wife-color); }
-        .login-hus { background: var(--hus-color); }
-        
-        /* Overlay nhập Pass */
-        #pass-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1001; color: white; flex-direction: column; align-items: center; justify-content: center; }
-        input { font-size: 2rem; width: 150px; text-align: center; border-radius: 10px; border: none; padding: 10px; margin: 20px; }
-        
-        /* Giao diện chính */
-        #main-content { display: none; height: 100%; flex-direction: column; }
-        @media (min-width: 768px) { #main-content { flex-direction: row; } }
-        .half { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; position: relative; }
-        .wife-side { background: var(--wife-color); }
-        .hus-side { background: var(--hus-color); }
-        
-        .heart-btn { font-size: 80px; background: none; border: none; cursor: pointer; transition: 0.2s; }
-        .heart-btn:active { transform: scale(1.2); }
-        .heart-btn:disabled { opacity: 0.3; filter: grayscale(1); }
-
-        .storage { background: rgba(255,255,255,0.2); padding: 20px; border-radius: 20px; text-align: center; margin-top: 20px; min-width: 180px; }
-        .count { font-size: 3rem; font-weight: bold; display: block; }
-        
-        /* Thông báo Notification */
-        #noti-box { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 15px 30px; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: none; z-index: 999; font-weight: bold; border: 2px solid var(--wife-color); }
+        :root { --pink: #ff4d6d; --blue: #00b4d8; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; background: #fff; }
+        #user-select { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; }
+        .select-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; cursor: pointer; font-weight: bold; transition: 0.3s; text-align: center; padding: 20px; }
+        .btn-hoaa { background: var(--pink); }
+        .btn-vinh { background: var(--blue); }
+        #pass-screen { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; color: white; flex-direction: column; align-items: center; justify-content: center; }
+        input { font-size: 2rem; width: 160px; text-align: center; border-radius: 15px; border: none; padding: 10px; margin: 20px; outline: none; }
+        #app { display: none; height: 100vh; flex-direction: column; }
+        @media (min-width: 768px) { #app { flex-direction: row; } }
+        .side { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; position: relative; }
+        .side-hoaa { background: var(--pink); border-bottom: 5px solid white; }
+        .side-vinh { background: var(--blue); }
+        @media (min-width: 768px) { .side-hoaa { border-bottom: none; border-right: 5px solid white; } }
+        .heart { font-size: 100px; cursor: pointer; transition: 0.2s; user-select: none; }
+        .heart:active { transform: scale(1.3); }
+        .heart.disabled { opacity: 0.3; pointer-events: none; }
+        .counter { background: rgba(255,255,255,0.2); padding: 15px 40px; border-radius: 30px; margin-top: 20px; text-align: center; }
+        .count-val { font-size: 4rem; font-weight: bold; display: block; }
+        #noti { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 15px 30px; border-radius: 50px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); display: none; z-index: 500; font-weight: bold; border: 2px solid var(--pink); }
+        .wait-text { font-size: 14px; margin-top: 10px; height: 20px; opacity: 0; transition: 0.3s; color: #fff; font-weight: bold; }
+        .show-wait { opacity: 1; }
     </style>
 </head>
 <body>
-
-    <div id="login-screen">
-        <div class="login-half login-wife" onclick="showPassInput('wife')">Bạn là "Hoaa" 💗</div>
-        <div class="login-half login-hus" onclick="showPassInput('vinh')">Bạn là "Vinh" 💙</div>
+    <div id="noti"></div>
+    <div id="user-select">
+        <div class="select-btn btn-hoaa" onclick="openPass('hoaa')">Bạn là "ơn vẹm" 💗</div>
+        <div class="select-btn btn-vinh" onclick="openPass('vinh')">Bạn là "ông chành" 💞</div>
     </div>
-
-    <div id="pass-overlay">
-        <h2 id="pass-title">Nhập mã số tình iuu</h2>
-        <input type="password" id="pass-input" maxlength="4" placeholder="****">
-        <p id="pass-msg"></p>
-        <button onclick="checkPass()" style="padding: 10px 30px; border-radius: 10px; border: none; background: white; font-weight: bold;">Xác nhận</button>
+    <div id="pass-screen">
+        <h2>Mã số tình iuu</h2>
+        <input type="password" id="pw-input" inputmode="numeric" maxlength="4" placeholder="****">
+        <button onclick="checkPass()" style="padding: 10px 40px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; background: white; color: black;">XÁC NHẬN</button>
     </div>
-
-    <div id="noti-box"></div>
-
-    <div id="main-content">
-        <div class="half wife-side">
-            <h1>Hoaa 💗</h1>
-            <button class="heart-btn" id="btnWife" onclick="sendHeart('wife')">❤️</button>
-            <div class="storage"><span>NHẬN TỪ VINH</span><span class="count" id="wifeCount">0</span></div>
+    <div id="app">
+        <div class="side side-hoaa">
+            <h1>ơn vẹm 💗</h1>
+            <div class="heart" id="h-hoaa" onclick="hit('hoaa')">❤️</div>
+            <div id="w-hoaa" class="wait-text">chờ 2s để gửi tiếp tình iuu nhaa💗</div>
+            <div class="counter"><small>NHẬN TỪ ÔNG CHÀNH</small><span class="count-val" id="count-hoaa">0</span></div>
         </div>
-        <div class="half hus-side">
-            <h1>Vinh 💙</h1>
-            <button class="heart-btn" id="btnHus" onclick="sendHeart('vinh')">💙</button>
-            <div class="storage"><span>NHẬN TỪ HOAA</span><span class="count" id="husCount">0</span></div>
+        <div class="side side-vinh">
+            <h1>ông chành 💞</h1>
+            <div class="heart" id="h-vinh" onclick="hit('vinh')">💙</div>
+            <div id="w-vinh" class="wait-text">chờ 2s để gửi tiếp tình iuu nhaa💗</div>
+            <div class="counter"><small>NHẬN TỪ ƠN VẸM</small><span class="count-val" id="count-vinh">0</span></div>
         </div>
     </div>
-
     <script>
-        // CẤU HÌNH FIREBASE CỦA BẠN
-        const firebaseConfig = {
+        const config = {
             apiKey: "AIzaSyC-DasZWS4fJ6Ek8qAjwHLMlFz3gjaYKhI",
             authDomain: "vinhhoalovebox-f2dbc.firebaseapp.com",
             databaseURL: "https://vinhhoalovebox-f2dbc-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "vinhhoalovebox-f2dbc",
-            storageBucket: "vinhhoalovebox-f2dbc.firebasestorage.app",
-            messagingSenderId: "11956164266",
             appId: "1:11956164266:web:3be3ea1f5bf28635e022d3"
         };
-
-        firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(config);
         const db = firebase.database();
-        const today = new Date().toLocaleDateString('sv-SE');
-        const dataRef = db.ref('love_box/' + today);
-
-        let currentUser = "";
-        let wrongCount = 0;
-        let isLocked = false;
-
-        function showPassInput(user) {
-            if(isLocked) return;
-            currentUser = user;
-            document.getElementById('pass-overlay').style.display = 'flex';
-            document.getElementById('pass-title').innerText = "Chào " + (user === 'wife' ? "Hoaa" : "Vinh") + "!";
-        }
-
+        const path = 'love_box/' + new Date().toISOString().split('T')[0];
+        let me = ""; 
+        function openPass(u) { me = u; document.getElementById('pass-screen').style.display = 'flex'; }
         function checkPass() {
-            if(isLocked) return;
-            const pass = document.getElementById('pass-input').value;
-            const correctPass = (currentUser === 'wife' ? "1202" : "1002");
-
-            if(pass === correctPass) {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('pass-overlay').style.display = 'none';
-                document.getElementById('main-content').style.display = 'flex';
-                startSync();
-            } else {
-                wrongCount++;
-                if(wrongCount >= 3) {
-                    isLocked = true;
-                    let timeLeft = 10;
-                    const timer = setInterval(() => {
-                        document.getElementById('pass-msg').innerText = `Sai quá 3 lần! Thử lại sau ${timeLeft}s`;
-                        timeLeft--;
-                        if(timeLeft < 0) {
-                            clearInterval(timer);
-                            isLocked = false;
-                            wrongCount = 0;
-                            document.getElementById('pass-msg').innerText = "";
-                        }
-                    }, 1000);
-                } else {
-                    document.getElementById('pass-msg').innerText = `Sai rồi! (Lần ${wrongCount}/3)`;
-                }
-            }
+            const val = document.getElementById('pw-input').value;
+            const correct = (me === 'hoaa' ? "1202" : "1002");
+            if(val === correct) {
+                document.getElementById('user-select').style.display = 'none';
+                document.getElementById('pass-screen').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
+                init();
+            } else { alert("Sai mã rồi nà!"); }
         }
-
-        function startSync() {
-            // Lắng nghe dữ liệu
-            dataRef.on('value', (snapshot) => {
-                const data = snapshot.val() || { wifeCount: 0, husCount: 0, lastAction: "" };
-                document.getElementById('wifeCount').innerText = data.wifeCount || 0;
-                document.getElementById('husCount').innerText = data.husCount || 0;
-
-                // Xử lý thông báo nhảy ra
-                if(data.lastAction && data.lastUser !== currentUser) {
-                    const msg = (data.lastUser === 'wife' ? "Vợ iuu nhớ chồng" : "Chồng iuu nhớ vợ");
-                    showNotification(msg);
+        function init() {
+            db.ref(path).on('value', s => {
+                const d = s.val() || { h: 0, v: 0 };
+                document.getElementById('count-hoaa').innerText = d.h || 0;
+                document.getElementById('count-vinh').innerText = d.v || 0;
+                if(d.msg && d.sender !== me) {
+                    const n = document.getElementById('noti');
+                    n.innerText = d.msg; n.style.display = 'block';
+                    setTimeout(() => n.style.display = 'none', 3000);
+                    db.ref(path + '/msg').set("");
                 }
             });
         }
-
-        function showNotification(text) {
-            const noti = document.getElementById('noti-box');
-            noti.innerText = text;
-            noti.style.display = 'block';
-            setTimeout(() => { noti.style.display = 'none'; }, 3000);
-        }
-
-        function sendHeart(role) {
-            if(role !== currentUser) {
-                alert("Bạn không thể nhấn bên của đối phương nha!");
-                return;
-            }
-            
-            const btn = (role === 'wife' ? document.getElementById('btnWife') : document.getElementById('btnHus'));
-            btn.disabled = true;
-
-            dataRef.once('value').then((snapshot) => {
-                let current = snapshot.val() || { wifeCount: 0, husCount: 0 };
-                if (role === 'wife') {
-                    dataRef.update({ husCount: (current.husCount || 0) + 1, lastAction: Date.now(), lastUser: 'wife' });
-                } else {
-                    dataRef.update({ wifeCount: (current.wifeCount || 0) + 1, lastAction: Date.now(), lastUser: 'vinh' });
-                }
+        function hit(u) {
+            if(u !== me) return;
+            const h = document.getElementById('h-' + u);
+            const w = document.getElementById('w-' + u);
+            h.classList.add('disabled');
+            w.classList.add('show-wait');
+            db.ref(path).once('value').then(s => {
+                const d = s.val() || { h: 0, v: 0 };
+                const up = { sender: me };
+                if(u === 'hoaa') { up.v = (d.v || 0) + 1; up.msg = "ơn vẹm iuu nhớ chồng 💗"; }
+                else { up.h = (d.h || 0) + 1; up.msg = "ông chành iuu nhớ vợ 💞"; }
+                db.ref(path).update(up);
             });
-
-            setTimeout(() => { btn.disabled = false; }, 2000);
+            setTimeout(() => { h.classList.remove('disabled'); w.classList.remove('show-wait'); }, 2000);
         }
     </script>
 </body>
