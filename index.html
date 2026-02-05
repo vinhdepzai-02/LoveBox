@@ -7,61 +7,68 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+    
     <style>
         :root { --pink: #ff4d6d; --blue: #00b4d8; --bg: #fdf0f2; }
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; background: #fff; }
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; background: #fff; touch-action: manipulation; }
         
-        /* Màn hình chọn User */
-        #user-select { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; }
-        .select-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        /* --- MÀN HÌNH CHỌN NGƯỜI (Luôn nổi lên trên cùng ban đầu) --- */
+        #user-select { position: fixed; inset: 0; z-index: 999; display: flex; flex-direction: column; height: 100%; width: 100%; }
+        .select-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; cursor: pointer; font-weight: bold; text-align: center; padding: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .select-btn:active { opacity: 0.8; }
         .btn-hoaa { background: var(--pink); }
         .btn-vinh { background: var(--blue); }
 
-        /* Màn hình Password */
-        #pass-screen { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; color: white; flex-direction: column; align-items: center; justify-content: center; }
-        input[type="password"] { font-size: 2rem; width: 160px; text-align: center; border-radius: 15px; border: none; padding: 10px; margin: 20px; outline: none; }
-        
-        /* Giao diện chính */
-        #app { display: none; height: 100vh; flex-direction: column; position: relative; }
+        /* --- MÀN HÌNH NHẬP PASS (Nổi lên trên màn chọn người) --- */
+        #pass-screen { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; color: white; flex-direction: column; align-items: center; justify-content: center; }
+        #pass-screen h2 { margin-bottom: 10px; font-size: 1.5rem; }
+        input[type="number"] { font-size: 2rem; width: 200px; text-align: center; border-radius: 15px; border: none; padding: 15px; margin: 20px; outline: none; background: white; color: #333; font-weight: bold; }
+        .confirm-btn { padding: 15px 50px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; background: var(--pink); color: white; font-size: 1.2rem; margin-top: 10px; }
+        .back-btn { margin-top: 20px; color: #aaa; text-decoration: underline; cursor: pointer; font-size: 0.9rem; }
+
+        /* --- GIAO DIỆN CHÍNH --- */
+        #app { display: none; height: 100%; width: 100%; flex-direction: column; position: relative; }
         @media (min-width: 768px) { #app { flex-direction: row; } }
         
-        /* Thanh công cụ (Ngày tháng & Nút Nhật ký) */
-        #controls { position: absolute; top: 10px; width: 100%; display: flex; justify-content: center; gap: 10px; z-index: 50; }
-        #date-picker { padding: 8px; border-radius: 20px; border: 2px solid #ddd; font-weight: bold; color: #555; outline: none; }
-        #diary-btn { padding: 8px 15px; border-radius: 20px; border: none; background: #ff9a9e; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        /* Thanh công cụ (Ngày & Nhật ký) */
+        #controls { position: absolute; top: 0; left: 0; width: 100%; padding: 10px; display: flex; justify-content: center; gap: 10px; z-index: 50; background: rgba(255,255,255,0.8); backdrop-filter: blur(5px); }
+        #date-picker { padding: 8px; border-radius: 15px; border: 1px solid #ccc; font-weight: bold; color: #555; outline: none; background: #fff; font-size: 1rem; }
+        #diary-btn { padding: 8px 15px; border-radius: 15px; border: none; background: linear-gradient(45deg, #ff9a9e, #fad0c4); color: white; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        .side { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; position: relative; transition: 0.3s; }
-        .side-hoaa { background: var(--pink); border-bottom: 5px solid white; }
+        .side { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; position: relative; width: 100%; }
+        .side-hoaa { background: var(--pink); border-bottom: 4px solid white; }
         .side-vinh { background: var(--blue); }
-        @media (min-width: 768px) { .side-hoaa { border-bottom: none; border-right: 5px solid white; } }
+        @media (min-width: 768px) { .side-hoaa { border-bottom: none; border-right: 4px solid white; } }
 
-        .heart { font-size: 90px; cursor: pointer; transition: 0.2s; user-select: none; margin-bottom: 10px; }
-        .heart:active { transform: scale(1.3); }
-        .heart.disabled { opacity: 0.5; transform: scale(0.9); pointer-events: none; }
+        .name-title { font-size: 2rem; margin: 0 0 10px 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .heart { font-size: 80px; cursor: pointer; transition: 0.2s; user-select: none; margin-bottom: 5px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1)); }
+        .heart:active { transform: scale(1.2); }
+        .heart.disabled { opacity: 0.5; transform: scale(0.95); pointer-events: none; }
         
-        .counter { background: rgba(255,255,255,0.25); padding: 10px 30px; border-radius: 30px; text-align: center; min-width: 140px; }
-        .count-val { font-size: 3.5rem; font-weight: bold; display: block; line-height: 1; }
+        .counter { background: rgba(255,255,255,0.25); padding: 5px 20px; border-radius: 20px; text-align: center; min-width: 120px; margin-top: 10px; }
+        .counter small { font-size: 0.7rem; opacity: 0.9; text-transform: uppercase; }
+        .count-val { font-size: 3rem; font-weight: bold; display: block; line-height: 1.1; }
         
-        .wait-text { font-size: 14px; margin-top: 5px; height: 20px; opacity: 0; transition: 0.3s; font-weight: bold; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .wait-text { font-size: 13px; height: 20px; opacity: 0; transition: 0.3s; font-weight: bold; color: #fff; margin-bottom: 5px; }
         .show-wait { opacity: 1; }
         
-        /* Modal Nhật Ký */
-        #diary-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .diary-content { background: #fff5f8; width: 90%; max-width: 500px; height: 80%; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: popUp 0.3s ease; }
-        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        /* --- MODAL NHẬT KÝ --- */
+        #diary-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        .diary-content { background: #fff; width: 90%; max-width: 500px; height: 80%; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .diary-header { text-align: center; color: var(--pink); margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .diary-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        textarea { width: 100%; height: 120px; border: 2px solid #eee; border-radius: 10px; padding: 10px; resize: none; font-family: 'Patrick Hand', cursive, sans-serif; font-size: 1.3rem; outline: none; background: #fafafa; }
+        textarea:focus { border-color: var(--pink); background: #fff; }
+        textarea[readonly] { background: #eee; color: #888; border: none; }
         
-        .diary-section { flex: 1; display: flex; flex-direction: column; margin-bottom: 10px; }
-        .diary-label { font-weight: bold; color: #555; margin-bottom: 5px; display: flex; justify-content: space-between; }
-        textarea { flex: 1; border: 2px solid #eee; border-radius: 10px; padding: 10px; resize: none; font-family: 'Patrick Hand', cursive, sans-serif; font-size: 1.2rem; outline: none; background: white; }
-        textarea:focus { border-color: var(--pink); }
-        textarea[readonly] { background: #f9f9f9; color: #777; }
-        
-        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; }
-        .save-btn { background: var(--pink); color: white; padding: 10px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
-        .close-btn { background: #ccc; color: white; padding: 10px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
+        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+        .save-btn { background: var(--pink); color: white; padding: 10px 25px; border-radius: 10px; border: none; font-weight: bold; font-size: 1rem; }
+        .close-btn { background: #ddd; color: #333; padding: 10px 25px; border-radius: 10px; border: none; font-weight: bold; font-size: 1rem; }
 
-        /* Thông báo */
-        #noti { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 10px 20px; border-radius: 50px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: none; z-index: 500; font-weight: bold; border: 2px solid var(--pink); white-space: nowrap; }
+        /* Thông báo nổi */
+        #noti { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: white; color: #333; padding: 12px 25px; border-radius: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); display: none; z-index: 3000; font-weight: bold; border: 2px solid var(--pink); white-space: nowrap; animation: slideDown 0.3s; }
+        @keyframes slideDown { from { top: -50px; } to { top: 70px; } }
     </style>
 </head>
 <body>
@@ -69,10 +76,213 @@
     <div id="noti"></div>
 
     <div id="user-select">
-        <div class="select-btn btn-hoaa" onclick="openPass('hoaa')">Bạn là "ơn vẹm" 💗</div>
-        <div class="select-btn btn-vinh" onclick="openPass('vinh')">Bạn là "ông chành" 💞</div>
+        <div class="select-btn btn-hoaa" onclick="openPass('hoaa')">Bạn là<br><span style="font-size: 2.5rem">Ơn Vẹm 💗</span></div>
+        <div class="select-btn btn-vinh" onclick="openPass('vinh')">Bạn là<br><span style="font-size: 2.5rem">Ông Chành 💞</span></div>
     </div>
 
     <div id="pass-screen">
-        <h2>Mật khẩu
+        <h2>Nhập Mã Tình Yêu</h2>
+        <input type="number" id="pw-input" pattern="[0-9]*" inputmode="numeric" placeholder="****">
+        <button class="confirm-btn" onclick="checkPass()">VÀO HỘP</button>
+        <div class="back-btn" onclick="closePass()">← Chọn lại người</div>
+    </div>
+
+    <div id="app">
+        <div id="controls">
+            <input type="date" id="date-picker" onchange="changeDate()">
+            <button id="diary-btn" onclick="openDiary()">📖 Nhật Ký</button>
+        </div>
+
+        <div class="side side-hoaa">
+            <h1 class="name-title">Ơn Vẹm 💗</h1>
+            <div class="heart" id="h-hoaa" onclick="hit('hoaa')">❤️</div>
+            <div id="w-hoaa" class="wait-text">chờ 2s nhaa...</div>
+            <div class="counter"><small>NHẬN TỪ ÔNG CHÀNH</small><span class="count-val" id="count-hoaa">...</span></div>
+        </div>
+        
+        <div class="side side-vinh">
+            <h1 class="name-title">Ông Chành 💞</h1>
+            <div class="heart" id="h-vinh" onclick="hit('vinh')">💙</div>
+            <div id="w-vinh" class="wait-text">chờ 2s nhaa...</div>
+            <div class="counter"><small>NHẬN TỪ ƠN VẸM</small><span class="count-val" id="count-vinh">...</span></div>
+        </div>
+    </div>
+
+    <div id="diary-modal">
+        <div class="diary-content">
+            <div class="diary-header">
+                <h2 style="margin:0">Nhật Ký Chung 💒</h2>
+                <small id="diary-date-display" style="color:#666">...</small>
+            </div>
             
+            <div class="diary-body">
+                <div>
+                    <strong style="color:var(--pink)">Ơn Vẹm viết:</strong>
+                    <textarea id="note-hoaa" placeholder="Vợ viết gì đi..."></textarea>
+                </div>
+                <div>
+                    <strong style="color:var(--blue)">Ông Chành viết:</strong>
+                    <textarea id="note-vinh" placeholder="Chồng viết gì đi..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-btns">
+                <button class="close-btn" onclick="document.getElementById('diary-modal').style.display='none'">Đóng</button>
+                <button class="save-btn" onclick="saveDiary()">Lưu lại ✨</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CẤU HÌNH FIREBASE
+        const config = {
+            apiKey: "AIzaSyC-DasZWS4fJ6Ek8qAjwHLMlFz3gjaYKhI",
+            authDomain: "vinhhoalovebox-f2dbc.firebaseapp.com",
+            databaseURL: "https://vinhhoalovebox-f2dbc-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "vinhhoalovebox-f2dbc",
+            appId: "1:11956164266:web:3be3ea1f5bf28635e022d3"
+        };
+        // Khởi tạo an toàn
+        if (!firebase.apps.length) { firebase.initializeApp(config); }
+        const db = firebase.database();
+
+        let me = ""; 
+        let currentPath = "";
+        let todayStr = new Date().toISOString().split('T')[0];
+
+        // Setup ngày mặc định
+        document.getElementById('date-picker').value = todayStr;
+        
+        // --- CHỨC NĂNG ĐĂNG NHẬP ---
+        function openPass(u) { 
+            me = u; 
+            document.getElementById('pass-screen').style.display = 'flex'; 
+            document.getElementById('pw-input').value = ""; // Xóa pass cũ
+            document.getElementById('pw-input').focus();
+        }
+
+        function closePass() {
+            document.getElementById('pass-screen').style.display = 'none';
+        }
+        
+        function checkPass() {
+            const val = document.getElementById('pw-input').value;
+            const correct = (me === 'hoaa' ? "1202" : "1002");
+            
+            if(val === correct) {
+                // Ẩn các màn hình login
+                document.getElementById('user-select').style.display = 'none';
+                document.getElementById('pass-screen').style.display = 'none';
+                // Hiện màn hình chính
+                document.getElementById('app').style.display = 'flex';
+                changeDate(); // Tải dữ liệu ngay
+            } else { 
+                alert("Sai mật khẩu rồi! Thử lại đi nè.");
+                document.getElementById('pw-input').value = "";
+            }
+        }
+
+        // --- XỬ LÝ DỮ LIỆU ---
+        function changeDate() {
+            const dateVal = document.getElementById('date-picker').value;
+            currentPath = 'love_box/' + dateVal;
+            
+            // Hủy lắng nghe cũ
+            db.ref().off(); 
+            
+            // Lắng nghe dữ liệu ngày đã chọn
+            db.ref(currentPath).on('value', s => {
+                const d = s.val() || { h: 0, v: 0, note_h: "", note_v: "" };
+                
+                document.getElementById('count-hoaa').innerText = d.h || 0;
+                document.getElementById('count-vinh').innerText = d.v || 0;
+                
+                // Cập nhật nội dung nhật ký
+                document.getElementById('note-hoaa').value = d.note_h || "";
+                document.getElementById('note-vinh').value = d.note_v || "";
+
+                // Hiển thị thông báo (chỉ ngày hiện tại)
+                if(dateVal === todayStr && d.msg && d.sender !== me) {
+                    showNoti(d.msg);
+                    db.ref(currentPath + '/msg').set("");
+                }
+            });
+        }
+
+        // --- THẢ TIM ---
+        function hit(u) {
+            // Chặn nếu không phải ngày hôm nay
+            if(document.getElementById('date-picker').value !== todayStr) {
+                alert("Chỉ được thả tim cho ngày hôm nay (" + todayStr + ") thui nha!");
+                return;
+            }
+            if(u !== me) {
+                alert("Nút bên kia là của người ta mà!");
+                return;
+            }
+
+            const h = document.getElementById('h-' + u);
+            const w = document.getElementById('w-' + u);
+            
+            // Hiệu ứng
+            h.classList.add('disabled');
+            w.classList.add('show-wait');
+            
+            // Gửi dữ liệu lên Firebase
+            db.ref(currentPath).once('value').then(s => {
+                const d = s.val() || { h: 0, v: 0 };
+                const up = { sender: me };
+                if(u === 'hoaa') { 
+                    up.v = (d.v || 0) + 1; 
+                    up.msg = "Vợ iuu nhớ chồng 💗"; 
+                } else { 
+                    up.h = (d.h || 0) + 1; 
+                    up.msg = "Chồng iuu nhớ vợ 💙"; 
+                }
+                db.ref(currentPath).update(up);
+            });
+
+            // Hồi chiêu 2s
+            setTimeout(() => { 
+                h.classList.remove('disabled'); 
+                w.classList.remove('show-wait'); 
+            }, 2000);
+        }
+
+        // --- NHẬT KÝ ---
+        function openDiary() {
+            document.getElementById('diary-modal').style.display = 'flex';
+            document.getElementById('diary-date-display').innerText = "Ngày: " + document.getElementById('date-picker').value;
+            
+            // Khóa ô của người kia
+            if(me === 'hoaa') {
+                document.getElementById('note-vinh').readOnly = true;
+                document.getElementById('note-hoaa').readOnly = false;
+            } else {
+                document.getElementById('note-hoaa').readOnly = true;
+                document.getElementById('note-vinh').readOnly = false;
+            }
+        }
+
+        function saveDiary() {
+            const txtHoaa = document.getElementById('note-hoaa').value;
+            const txtVinh = document.getElementById('note-vinh').value;
+            const up = {};
+            
+            if(me === 'hoaa') up.note_h = txtHoaa;
+            else up.note_v = txtVinh;
+
+            db.ref(currentPath).update(up).then(() => {
+                alert("Đã lưu nhật ký thành công! 💌");
+                document.getElementById('diary-modal').style.display = 'none';
+            }).catch(e => alert("Lỗi lưu: " + e));
+        }
+
+        function showNoti(txt) {
+            const n = document.getElementById('noti');
+            n.innerText = txt; n.style.display = 'block';
+            setTimeout(() => n.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>
